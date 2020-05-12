@@ -2,6 +2,7 @@ from pynput import keyboard, mouse
 import time
 from pathlib import Path
 import pyautogui
+import random
 
 ACTION_LIST_FILE = Path('action_list.pkl')
 
@@ -56,6 +57,27 @@ class MoveAction(Action):
 	def __repr__(self):
 		return "move"
 
+def move_mouse_randomly(duration):
+	# print(f"move_mouse_randomly..")
+	start = time.time()
+	num_moves = int(duration) // 2
+	
+	for move in range(num_moves):
+		x = random.randint(420, 1614)
+		y = random.randint(318, 874)
+		# 0.3 - 0.7s
+		duration = float(random.randint(300, 700)) / 1000.0
+
+		pyautogui.moveTo(x,
+						y, 
+						duration=duration, 
+						tween=pyautogui.easeInOutQuad,
+		)
+
+	return time.time() - start
+
+
+
 class ClickAction(Action):
 	def __init__(self, x, y):
 		self.x = x
@@ -63,10 +85,38 @@ class ClickAction(Action):
 
 	def execute(self):
 		self.pre_execute()
+		duration = self.duration
+		if duration > 1.0:
+
+			if duration > 5.0:
+				random_move_time = duration / 2
+				actual_random_move_time = move_mouse_randomly(random_move_time)
+				duration = duration - actual_random_move_time
+
+			# print("tweaking duration")
+
+			sleep_fraction = float(random.randint(500, 600)) / 1000.0
+			# sleep_fraction += 0.75
+			sleep_time = sleep_fraction * duration
+			new_duration = (1.0 - sleep_fraction) * duration
+			
+			# add delay to sleep time
+			# sleep_time += 0.2
+			duration = new_duration
+
+			# print(f"original duration: {self.duration}")
+			# print(f"sleep time: {sleep_time}")
+			# print(f"new duration: {duration}")
+
+			time.sleep(sleep_time)
+
+		else:
+			duration += 0.2
+
 
 		pyautogui.moveTo(self.x,
 			self.y, 
-			duration=self.duration / 2, 
+			duration=duration, 
 			tween=pyautogui.easeInOutQuad,
 			)
 		pyautogui.click()

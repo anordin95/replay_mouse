@@ -2,8 +2,9 @@ import pickle
 from actions import ActionList, MoveAction, ClickAction, KeyAction, ACTION_LIST_FILE
 
 def replay(action_list):
-	for action in action_list:
-		print(f"Executing action: {action}. duration: {action.duration}")
+	len_action_list = len(action_list)
+	for idx, action in enumerate(action_list):
+		print(f"Executing action #{idx+1} of {len_action_list}. action: {action}. duration: {action.duration}")
 		action.execute()
 
 def get_action_list():
@@ -47,13 +48,16 @@ def shorten_action_list(action_list):
 
 if __name__ == '__main__':
 	action_list = get_action_list()
-	print(f"Original length: {len(action_list)}")
+	# print(f"Original length: {len(action_list)}")
 	
-	short_action_list = shorten_action_list(action_list)
-	print(f"New length: {len(short_action_list)}")
+	# short_action_list = shorten_action_list(action_list)
+	# print(f"New length: {len(short_action_list)}")
 	
 	# 40 minutes
-	for i in range(20):
-		replay(short_action_list)
+	for i in range(30):
+		
+		print(f"BEGINNING REPLAY ITERATION:{i+1}...")
+
+		replay(action_list)
 
 
