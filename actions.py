@@ -57,26 +57,24 @@ class MoveAction(Action):
 	def __repr__(self):
 		return "move"
 
-def move_mouse_randomly(duration):
-	# print(f"move_mouse_randomly..")
-	start = time.time()
-	num_moves = int(duration) // 2
+# def move_mouse_randomly(duration):
+# 	# print(f"move_mouse_randomly..")
+# 	start = time.time()
+# 	num_moves = int(duration) // 2
 	
-	for move in range(num_moves):
-		x = random.randint(420, 1614)
-		y = random.randint(318, 874)
-		# 0.3 - 0.7s
-		duration = float(random.randint(300, 700)) / 1000.0
+# 	for move in range(num_moves):
+# 		x = random.randint(420, 1614)
+# 		y = random.randint(318, 874)
+# 		# 0.3 - 0.7s
+# 		duration = float(random.randint(300, 700)) / 1000.0
 
-		pyautogui.moveTo(x,
-						y, 
-						duration=duration, 
-						tween=pyautogui.easeInOutQuad,
-		)
+# 		pyautogui.moveTo(x,
+# 						y, 
+# 						duration=duration, 
+# 						tween=pyautogui.easeInOutQuad,
+# 		)
 
-	return time.time() - start
-
-
+# 	return time.time() - start
 
 class ClickAction(Action):
 	def __init__(self, x, y):
