@@ -3,10 +3,12 @@ import time
 from pathlib import Path
 import pyautogui
 import random
+import logging
 
 ACTION_LIST_FILE = Path('action_list.pkl')
 
 keyboard_controller = keyboard.Controller()
+logging.basicConfig(level=logging.DEBUG)
 
 class ActionList:
 	def __init__(self, start_time):
@@ -31,6 +33,14 @@ class ActionList:
 	
 	def normalize_ts(self, ts):
 		return ts - self.start_time
+
+	def get_total_time(self):
+		# subtracting by 0 does nothing,
+		# but it does help understanding the point of the code.
+		# 0.0 is the start of time for this object.
+		start_time = 0.0
+		total_time = self.prev_action_time - start_time
+		return total_time
 
 class Action:
 	def add_duration(self, duration):
@@ -57,70 +67,135 @@ class MoveAction(Action):
 	def __repr__(self):
 		return "move"
 
-# def move_mouse_randomly(duration):
-# 	# print(f"move_mouse_randomly..")
-# 	start = time.time()
-# 	num_moves = int(duration) // 2
+def move_mouse_randomly(duration):
+	'''
+	randomly move mouse for a period less than duration.
+
+	args:
+		duration: time to run
+
+	returns:
+		time_elapsed: actual time
+	'''
+	logging.info("Beginning move_mouse_randomly.")
 	
-# 	for move in range(num_moves):
-# 		x = random.randint(420, 1614)
-# 		y = random.randint(318, 874)
-# 		# 0.3 - 0.7s
-# 		duration = float(random.randint(300, 700)) / 1000.0
+	start = time.time()
+	num_moves = min(int(duration), 10)
+	
+	logging.info(f"Moving mouse {num_moves} times.")
 
-# 		pyautogui.moveTo(x,
-# 						y, 
-# 						duration=duration, 
-# 						tween=pyautogui.easeInOutQuad,
-# 		)
+	# purposely yet roughly chosen 
+	# as few hundred pixels away from border
+	x_min, x_max = 420, 1614
+	y_min, y_max = 318, 874
 
-# 	return time.time() - start
+	# min and max wait in milliseconds.
+	wait_min, wait_max = 300, 700
+	
+	has_clicked = False
+	
+	for move in range(num_moves):
+		
+		# right-click sometimes but at least once.
+		if random.random() > 0.85 or not has_clicked:
+			logging.info("Random right click button.")
+			pyautogui.click(button='right')
+			has_clicked = True
+
+		x = random.randint(x_min, x_max)
+		y = random.randint(y_min, y_max)
+		
+		duration = random.randint(wait_min, wait_max) / 1000.0
+
+		pyautogui.moveTo(x,
+						y, 
+						duration=duration, 
+						tween=pyautogui.easeInOutQuad,
+		)
+
+	time_elapsed = time.time() - start
+
+	return time_elapsed
 
 class ClickAction(Action):
+
+	LONG_CLICK_THRESHOLD = 15
+
+	# 4 minutes
+	VERY_LONG_THRESHOLD = 240
+
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
 
+	def wait_on_long_durations(self, wait_time):
+		logging.info(f"Waiting on very long duration click. wait_time: {wait_time}")
+
+		time_elapsed = move_mouse_randomly(wait_time)
+		remaining_sleep_time = wait_time - time_elapsed
+		
+		logging.info(f"Sleeping for {remaining_sleep_time} seconds.")
+		time.sleep(remaining_sleep_time)
+
+	def wait_on_very_long_durations(self, wait_time):
+		time_remaining = wait_time
+
+		logging.info(f"Waiting on very long duration click. wait_time: {wait_time}")
+
+		sleep_time = 180
+		time_buffer = 30
+		logout_time = 300
+		
+		assert sleep_time + time_buffer < 300
+
+		while time_remaining > sleep_time + time_buffer:
+
+			logging.info(f"Sleeping: {sleep_time}.")
+			time.sleep(sleep_time)
+			time_remaining -= sleep_time
+
+			time_elapsed = move_mouse_randomly(time_remaining)
+			time_remaining -= time_elapsed
+
+		logging.info(f"Sleeping: {time_remaining}.")
+		time.sleep(time_remaining)
+
 	def execute(self):
 		self.pre_execute()
+
 		duration = self.duration
-		if duration > 1.0:
 
-			if duration > 5.0:
-				random_move_time = duration / 2
-				actual_random_move_time = move_mouse_randomly(random_move_time)
-				duration = duration - actual_random_move_time
-
-			# print("tweaking duration")
-
-			sleep_fraction = float(random.randint(500, 600)) / 1000.0
-			# sleep_fraction += 0.75
-			sleep_time = sleep_fraction * duration
-			new_duration = (1.0 - sleep_fraction) * duration
+		click_time = duration
+		
+		if duration > self.VERY_LONG_THRESHOLD:
+			# click min and max in milliseconds.
+			wait_min, wait_max = 300, 700
+			click_time = random.randint(wait_min, wait_max) / 1000.0
 			
-			# add delay to sleep time
-			# sleep_time += 0.2
-			duration = new_duration
+			stall_time = duration - click_time
 
-			# print(f"original duration: {self.duration}")
-			# print(f"sleep time: {sleep_time}")
-			# print(f"new duration: {duration}")
+			self.wait_on_very_long_durations(stall_time)
 
-			time.sleep(sleep_time)
+		elif duration > self.LONG_CLICK_THRESHOLD:
+			
+			# click min and max in milliseconds.
+			wait_min, wait_max = 300, 700
+			click_time = random.randint(wait_min, wait_max) / 1000.0
+			
+			stall_time = duration - click_time
 
-		else:
-			duration += 0.2
-
+			self.wait_on_long_durations(stall_time)
 
 		pyautogui.moveTo(self.x,
 			self.y, 
-			duration=duration, 
+			duration=click_time, 
 			tween=pyautogui.easeInOutQuad,
 			)
 		pyautogui.click()
 
 	def __repr__(self):
 		return "click"
+
 
 class KeyAction(Action):
 	def __init__(self, key, is_press, is_release):

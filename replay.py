@@ -1,5 +1,10 @@
 import pickle
 from actions import ActionList, MoveAction, ClickAction, KeyAction, ACTION_LIST_FILE
+import logging
+import time
+from potion_tracker import POTIONS_TRACKER_FILE, PotionsTracker
+
+logging.basicConfig(level=logging.DEBUG)
 
 def replay(action_list):
 	len_action_list = len(action_list)
@@ -13,51 +18,33 @@ def get_action_list():
 
 	return action_list
 
-def shorten_action_list(action_list):
+def get_potion_tracker():
+	with open(POTIONS_TRACKER_FILE, 'rb') as f:
+		potion_tracker = pickle.load(f)
 
-	'''
-	The goal is to increase the speed with which the action_list
-	may be replayed.
-
-	Currently, the listener is so acute, that it takes much longer
-	to replay a series of mouse events than it takes to record them.
-
-	This method will selectively remove MoveAction's only from the
-	action_list in hopes of speeding up the script.
-	'''
-	
-	# keep every nth move action
-	frequency = 6
-
-	counter = 0
-	short_action_list = []
-
-	for action in action_list:
-		if not isinstance(action, MoveAction):
-			short_action_list.append(action)
-			continue
-
-		if counter % frequency == 0:
-			short_action_list.append(action)
-
-		counter += 1
-
-	return short_action_list
-
-
+	return potion_tracker
 
 if __name__ == '__main__':
 	action_list = get_action_list()
-	# print(f"Original length: {len(action_list)}")
-	
-	# short_action_list = shorten_action_list(action_list)
-	# print(f"New length: {len(short_action_list)}")
-	
-	# 40 minutes
-	for i in range(30):
-		
-		print(f"BEGINNING REPLAY ITERATION:{i+1}...")
+	potion_tracker = get_potion_tracker()
 
+	NUM_REPLAYS = 12
+
+	# replay_time_seconds = action_list.get_total_time()
+	# total_time_minutes = (replay_time * NUM_REPLAYS) / 60.0
+	
+	logging.info(f"Beginning {NUM_REPLAYS} replays...")
+	# logging.info(f"Each replay takes {replay_time} seconds.")
+	# logging.info(f"Total runtime will be: {total_time_minutes} minutes.")
+
+	for replay_num in range(1, NUM_REPLAYS+1):
+		
+		potion_tracker.sip_next_available_potion()
+
+		logging.info(f"BEGINNING REPLAY ITERATION:{replay_num}...")
 		replay(action_list)
+
+		# provide 5-second buffer for final action to actually finish
+		time.sleep(5.0)
 
 
