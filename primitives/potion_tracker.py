@@ -1,4 +1,4 @@
-from actions import ClickAction
+from primitives.actions import ClickAction
 from pynput import keyboard, mouse
 import logging
 import pickle
