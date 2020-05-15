@@ -4,7 +4,7 @@ import logging
 import time
 from potion_tracker import POTIONS_TRACKER_FILE, PotionsTracker
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def replay(action_list):
 	len_action_list = len(action_list)
@@ -33,15 +33,15 @@ if __name__ == '__main__':
 	# replay_time_seconds = action_list.get_total_time()
 	# total_time_minutes = (replay_time * NUM_REPLAYS) / 60.0
 	
-	logging.info(f"Beginning {NUM_REPLAYS} replays...")
-	# logging.info(f"Each replay takes {replay_time} seconds.")
-	# logging.info(f"Total runtime will be: {total_time_minutes} minutes.")
+	logger.info(f"Beginning {NUM_REPLAYS} replays...")
+	# logger.info(f"Each replay takes {replay_time} seconds.")
+	# logger.info(f"Total runtime will be: {total_time_minutes} minutes.")
 
 	for replay_num in range(1, NUM_REPLAYS+1):
 		
 		potion_tracker.sip_next_available_potion()
 
-		logging.info(f"BEGINNING REPLAY ITERATION:{replay_num}...")
+		logger.info(f"BEGINNING REPLAY ITERATION:{replay_num}...")
 		replay(action_list)
 
 		# provide 5-second buffer for final action to actually finish

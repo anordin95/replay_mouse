@@ -7,7 +7,7 @@ import logging
 from potion_tracker import setup_potions_tracker
 from functools import partial
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def on_move(x, y):
 	'''
@@ -21,25 +21,25 @@ def on_click(x, y, button, pressed, action_list):
 	if not pressed or button != mouse.Button.left:
 		return
 
-	logging.info(f"clicked: {x}, {y}")
+	logger.info(f"clicked: {x}, {y}")
 
 	click_action = ClickAction(x, y)
 	action_list.add(click_action)
 
 def on_press(key, action_list):
-	logging.info(f"key-press: {key}")
+	logger.info(f"key-press: {key}")
 
 	if key == keyboard.Key.shift:
 		action = KeyAction(key, is_press=True, is_release=False)
 		action_list.add(action)
 
 	elif key == keyboard.Key.esc:
-		logging.critical("Escape pressed. Terminating listeners...")
+		logger.critical("Escape pressed. Terminating listeners...")
 		# returning False exits the handler.
 		return False
 
 def on_release(key, action_list):
-	logging.info(f"key-release: {key}")
+	logger.info(f"key-release: {key}")
 
 	if key == keyboard.Key.shift:
 		action = KeyAction(key, is_press=False, is_release=True)
@@ -63,8 +63,8 @@ def main(use_potions):
 			keyboard_listener.join()
 			# will reach here once esc has been pressed.
 			
-	logging.critical("\n\n\n DONE \n\n\n")
-	logging.critical("Writing actions to pickle file.")
+	logger.critical("\n\n\n DONE \n\n\n")
+	logger.critical("Writing actions to pickle file.")
 
 	with open(ACTION_LIST_FILE, "wb") as f:
 		pickle.dump(action_list.actions, f)

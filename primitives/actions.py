@@ -8,7 +8,8 @@ import logging
 ACTION_LIST_FILE = Path('action_list.pkl')
 
 keyboard_controller = keyboard.Controller()
-logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
 
 class ActionList:
 	def __init__(self, start_time):
@@ -77,12 +78,12 @@ def move_mouse_randomly(duration):
 	returns:
 		time_elapsed: actual time
 	'''
-	logging.info("Beginning move_mouse_randomly.")
+	logger.info("Beginning move_mouse_randomly.")
 	
 	start = time.time()
 	num_moves = min(int(duration), 10)
 	
-	logging.info(f"Moving mouse {num_moves} times.")
+	logger.info(f"Moving mouse {num_moves} times.")
 
 	# purposely yet roughly chosen 
 	# as few hundred pixels away from border
@@ -98,7 +99,7 @@ def move_mouse_randomly(duration):
 		
 		# right-click sometimes but at least once.
 		if random.random() > 0.85 or not has_clicked:
-			logging.info("Random right click button.")
+			logger.info("Random right click button.")
 			pyautogui.click(button='right')
 			has_clicked = True
 
@@ -129,18 +130,18 @@ class ClickAction(Action):
 		self.y = y
 
 	def wait_on_long_durations(self, wait_time):
-		logging.info(f"Waiting on very long duration click. wait_time: {wait_time}")
+		logger.info(f"Waiting on very long duration click. wait_time: {wait_time}")
 
 		time_elapsed = move_mouse_randomly(wait_time)
 		remaining_sleep_time = wait_time - time_elapsed
 		
-		logging.info(f"Sleeping for {remaining_sleep_time} seconds.")
+		logger.info(f"Sleeping for {remaining_sleep_time} seconds.")
 		time.sleep(remaining_sleep_time)
 
 	def wait_on_very_long_durations(self, wait_time):
 		time_remaining = wait_time
 
-		logging.info(f"Waiting on very long duration click. wait_time: {wait_time}")
+		logger.info(f"Waiting on very long duration click. wait_time: {wait_time}")
 
 		sleep_time = 180
 		time_buffer = 30
@@ -150,14 +151,14 @@ class ClickAction(Action):
 
 		while time_remaining > sleep_time + time_buffer:
 
-			logging.info(f"Sleeping: {sleep_time}.")
+			logger.info(f"Sleeping: {sleep_time}.")
 			time.sleep(sleep_time)
 			time_remaining -= sleep_time
 
 			time_elapsed = move_mouse_randomly(time_remaining)
 			time_remaining -= time_elapsed
 
-		logging.info(f"Sleeping: {time_remaining}.")
+		logger.info(f"Sleeping: {time_remaining}.")
 		time.sleep(time_remaining)
 
 	def execute(self):

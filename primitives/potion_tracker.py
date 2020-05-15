@@ -7,6 +7,8 @@ import pyautogui
 from functools import partial
 import time
 
+logger = logging.getLogger(__name__)
+
 class Potion(ClickAction):
 	
 	potion_px_width = 15
@@ -23,7 +25,7 @@ class Potion(ClickAction):
 		return self.doses == 0
 
 	def drink(self):
-		logging.info("Drinking potion.")
+		logger.info("Drinking potion.")
 		self.doses -= 1
 		
 		# ms
@@ -52,7 +54,7 @@ class PotionsTracker:
 		self.potion_type = potion_type
 
 	def add_potion_location(self, x, y):
-		logging.info(f"Adding {self.potion_type} potion location: {x}, {y}")
+		logger.info(f"Adding {self.potion_type} potion location: {x}, {y}")
 
 		location = x, y
 		potion = Potion(location)
@@ -60,20 +62,20 @@ class PotionsTracker:
 		self.potions.append(potion)
 
 	def sip_next_available_potion(self):
-		logging.info(f"Attempting to sip next available {self.potion_type} potion.")
+		logger.info(f"Attempting to sip next available {self.potion_type} potion.")
 		
 		for potion in self.potions:
 			if potion.has_doses_left():
 				potion.drink()
 				return True
 
-		logging.critical(f"No available {self.potion_type} potions.")
+		logger.critical(f"No available {self.potion_type} potions.")
 		return False
 
 
 def on_press(key, potions_tracker):
 	if key == keyboard.Key.esc:
-		logging.critical("Escape pressed. Done setting up potions tracker.")
+		logger.critical("Escape pressed. Done setting up potions tracker.")
 		# returning False exits the handler.
 		return False
 
@@ -88,10 +90,10 @@ def on_click(x, y, button, pressed, potions_tracker):
 
 
 def log_instructions(potion_type):
-	logging.info("Instructions: \n")
-	logging.info(f"Right-click each {potion_type.upper()} potion in your inventory.")
-	logging.info("Only click potions with 4 doses!")
-	logging.info("Press esc, once you are complete.")
+	logger.info("Instructions: \n")
+	logger.info(f"Right-click each {potion_type.upper()} potion in your inventory.")
+	logger.info("Only click potions with 4 doses!")
+	logger.info("Press esc, once you are complete.")
 
 def setup_potions_tracker(filename, potion_type: str):
 	'''
@@ -99,7 +101,7 @@ def setup_potions_tracker(filename, potion_type: str):
 		filename: file to save .pkl potion tracker to
 		potion_type: name of potion to use.
 	'''
-	logging.info("Setting up potions tracker...")
+	logger.info("Setting up potions tracker...")
 	
 	log_instructions(potion_type)
 	potions_tracker = PotionsTracker(potion_type)
@@ -114,4 +116,4 @@ def setup_potions_tracker(filename, potion_type: str):
 	with open(filename, "wb") as f:
 		pickle.dump(potions_tracker, f)
 
-	logging.info("Potion tracker is complete and saved.")
+	logger.info("Potion tracker is complete and saved.")
