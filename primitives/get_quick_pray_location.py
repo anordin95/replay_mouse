@@ -1,4 +1,4 @@
-from primitives.actions import ClickAction
+from primitives.click_location import ClickLocation
 from pynput import keyboard, mouse
 import logging
 import pickle
@@ -24,7 +24,10 @@ def on_click(x, y, button, pressed):
 	if button != mouse.Button.right or pressed is False:
 		return
 
-	quick_pray_location = x, y
+	global quick_pray_location
+	
+	logger.info("Recorded click location.")
+	quick_pray_location = ClickLocation(x, y, margin_for_error_px=3)
 
 def log_instructions():
 	logger.info("Right click once on the quick-prayer location.")
@@ -32,7 +35,7 @@ def log_instructions():
 	
 def get_quick_pray_location(filename):
 	log_instructions()
-	
+
 	with keyboard.Listener(on_press=on_press) as keyboard_listener:
 		with mouse.Listener(on_click=on_click) as mouse_listener:
 			keyboard_listener.join()
