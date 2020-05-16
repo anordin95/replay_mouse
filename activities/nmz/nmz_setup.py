@@ -1,12 +1,15 @@
+from pathlib import Path
 from primitives.potion_tracker import setup_potions_tracker
 from primitives.get_quick_pray_location import get_quick_pray_location
 from primitives.record import record
 
-PRAYER_POTS_FILENAME = 'prayer_pots.pkl'
-RANGE_POTS_FILENAME = 'ranging_pots.pkl'
-ABSORPTION_POTS_FILENAME = 'absorption_pots.pkl'
-QUICK_PRAY_LOC_FILE = 'quick_pray_loc.pkl'
-ROCK_CAKE_ACTION_LIST_FILE = 'rock_cake_action_list.pkl'
+PICKLE_FOLDER = Path('pickled_objects')
+
+PRAYER_POTS_FILENAME = PICKLE_FOLDER / 'prayer_pots.pkl'
+RANGE_POTS_FILENAME = PICKLE_FOLDER / 'ranging_pots.pkl'
+ABSORPTION_POTS_FILENAME = PICKLE_FOLDER / 'absorption_pots.pkl'
+QUICK_PRAY_LOC_FILE = PICKLE_FOLDER / 'quick_pray_loc.pkl'
+ROCK_CAKE_ACTION_LIST_FILE = PICKLE_FOLDER / 'rock_cake_action_list.pkl'
 
 import logging
 log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
